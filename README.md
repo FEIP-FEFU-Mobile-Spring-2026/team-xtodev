@@ -1,17 +1,29 @@
-# fastbuy
+# FastBuy
 
-A new Flutter project.
+Мобильный маркетплейс для быстрых покупок — удобный поиск товаров по категориям, просмотр карточек и оформление заказа.
 
-## Getting Started
+## Стек и платформа
 
-This project is a starting point for a Flutter application.
+- **Flutter** (Dart) — кроссплатформенный UI-фреймворк
+- **Платформы:** Android, iOS
 
-A few resources to get you started if this is your first Flutter project:
+## Состав команды
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+| Участник | Роль |
+|----------|------|
+| Blink    | Разработчик (Flutter) |
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Сборка проекта
+
+Убедитесь, что установлен [Flutter SDK](https://docs.flutter.dev/get-started/install).
+
+```bash
+# Установить зависимости
+flutter pub get
+
+# Запустить приложение
+flutter run
+
+# Собрать APK
+flutter build apk
+```
