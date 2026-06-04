@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'data/product_repository.dart';
+import 'screens/catalog_screen.dart';
+import 'screens/cart_screen.dart';
+import 'viewmodel/catalog_viewmodel.dart';
 
 void main() {
-  runApp(const FastBuyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => CatalogViewModel(ProductRepository())..load(),
+      child: const FastBuyApp(),
+    ),
+  );
 }
 
 class FastBuyApp extends StatelessWidget {
@@ -16,106 +27,46 @@ class FastBuyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const _MainScreen(),
     );
   }
 }
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class _MainScreen extends StatefulWidget {
+  const _MainScreen();
 
-  static const _categories = ['Электроника', 'Одежда', 'Дом', 'Спорт', 'Красота'];
+  @override
+  State<_MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<_MainScreen> {
+  int _currentIndex = 0;
+
+  static const _screens = [
+    CatalogScreen(),
+    CartScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('FastBuy'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(icon: const Icon(Icons.shopping_cart_outlined), onPressed: () {}),
-        ],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          SearchBar(
-            hintText: 'Поиск товаров...',
-            leading: const Icon(Icons.search),
-            onChanged: (_) {},
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (i) => setState(() => _currentIndex = i),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.grid_view_outlined),
+            selectedIcon: Icon(Icons.grid_view),
+            label: 'Каталог',
           ),
-          const SizedBox(height: 20),
-          const Text('Категории', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 40,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: _categories.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (context, i) => FilterChip(
-                label: Text(_categories[i]),
-                onSelected: (_) {},
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Text('Популярные товары', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.75,
-            ),
-            itemCount: 6,
-            itemBuilder: (context, i) => _ProductCard(index: i),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProductCard extends StatelessWidget {
-  final int index;
-
-  const _ProductCard({required this.index});
-
-  static const _names = [
-    'Наушники Pro', 'Кроссовки Air', 'Рюкзак Urban',
-    'Смарт-часы X', 'Куртка Winter', 'Лампа LED',
-  ];
-
-  static const _prices = ['3 990 ₽', '7 490 ₽', '2 190 ₽', '12 990 ₽', '5 690 ₽', '890 ₽'];
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              color: Colors.indigo.withAlpha(30),
-              child: const Center(child: Icon(Icons.image_outlined, size: 48, color: Colors.indigo)),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(_names[index], style: const TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 4),
-                Text(_prices[index], style: TextStyle(color: Theme.of(context).colorScheme.primary)),
-              ],
-            ),
+          NavigationDestination(
+            icon: Icon(Icons.shopping_cart_outlined),
+            selectedIcon: Icon(Icons.shopping_cart),
+            label: 'Корзина',
           ),
         ],
       ),
