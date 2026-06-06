@@ -4,8 +4,9 @@ import '../utils/price_formatter.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
+  final VoidCallback? onTap;
 
-  const ProductCard({super.key, required this.product});
+  const ProductCard({super.key, required this.product, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +15,9 @@ class ProductCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 2,
-      child: Column(
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
@@ -63,6 +66,7 @@ class ProductCard extends StatelessWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }

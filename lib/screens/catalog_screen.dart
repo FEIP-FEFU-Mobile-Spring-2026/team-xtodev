@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/product.dart';
 import '../viewmodel/catalog_viewmodel.dart';
 import '../widgets/product_card.dart';
+import '../widgets/product_detail_sheet.dart';
 
 class CatalogScreen extends StatelessWidget {
   const CatalogScreen({super.key});
@@ -71,6 +73,18 @@ class _ErrorView extends StatelessWidget {
   }
 }
 
+void _openDetail(BuildContext context, Product product) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) => ProductDetailSheet(product: product),
+  );
+}
+
 class _CatalogContent extends StatelessWidget {
   final CatalogViewModel vm;
 
@@ -118,7 +132,10 @@ class _CatalogContent extends StatelessWidget {
                     childAspectRatio: 0.65,
                   ),
                   itemCount: products.length,
-                  itemBuilder: (_, i) => ProductCard(product: products[i]),
+                  itemBuilder: (context, i) => ProductCard(
+                    product: products[i],
+                    onTap: () => _openDetail(context, products[i]),
+                  ),
                 ),
         ),
       ],
