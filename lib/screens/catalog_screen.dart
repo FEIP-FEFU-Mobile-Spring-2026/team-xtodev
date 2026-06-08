@@ -97,6 +97,24 @@ class _CatalogContent extends StatelessWidget {
 
     return Column(
       children: [
+        if (vm.isOffline)
+          Container(
+            width: double.infinity,
+            color: Colors.orange.shade100,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Icon(Icons.wifi_off, size: 16, color: Colors.deepOrange.shade700),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Нет сети. Показаны сохранённые данные.',
+                    style: TextStyle(fontSize: 12, color: Colors.deepOrange.shade900),
+                  ),
+                ),
+              ],
+            ),
+          ),
         SizedBox(
           height: 48,
           child: SingleChildScrollView(
