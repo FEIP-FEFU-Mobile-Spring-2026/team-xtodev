@@ -22,8 +22,9 @@ class CatalogViewModel extends ChangeNotifier {
 
   late final StreamSubscription<List<ConnectivityResult>> _connectivitySub;
 
-  CatalogViewModel(this._repository) {
-    _connectivitySub = Connectivity().onConnectivityChanged.listen(_onConnectivityChanged);
+  CatalogViewModel(this._repository, {Stream<List<ConnectivityResult>>? connectivityStream}) {
+    _connectivitySub = (connectivityStream ?? Connectivity().onConnectivityChanged)
+        .listen(_onConnectivityChanged);
   }
 
   CatalogStatus get status => _status;
@@ -71,7 +72,6 @@ class CatalogViewModel extends ChangeNotifier {
       }
       notifyListeners();
     } catch (_) {
-      // Still offline — keep state as is
     } finally {
       _recovering = false;
     }

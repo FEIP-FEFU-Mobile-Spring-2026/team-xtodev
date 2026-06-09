@@ -1,5 +1,6 @@
 String formatPrice(int kopecks) {
   final rubles = kopecks ~/ 100;
+  final kop = kopecks % 100;
   final s = rubles.toString();
   final buf = StringBuffer();
   for (int i = 0; i < s.length; i++) {
@@ -7,6 +8,10 @@ String formatPrice(int kopecks) {
       buf.writeCharCode(0x00A0);
     }
     buf.write(s[i]);
+  }
+  if (kop != 0) {
+    buf.write('.');
+    buf.write(kop.toString().padLeft(2, '0'));
   }
   buf.write(' ₽');
   return buf.toString();
