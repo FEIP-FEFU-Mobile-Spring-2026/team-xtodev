@@ -8,9 +8,9 @@ class CatalogDatabase {
   static final CatalogDatabase instance = CatalogDatabase._();
   CatalogDatabase._();
 
-  Database? _db;
+  Future<Database>? _dbFuture;
 
-  Future<Database> get _database async => _db ??= await _open();
+  Future<Database> get _database => _dbFuture ??= _open();
 
   Future<Database> _open() async {
     final path = p.join(await getDatabasesPath(), 'catalog.db');
