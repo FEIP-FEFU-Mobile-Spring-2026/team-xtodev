@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/product_repository.dart';
@@ -14,12 +16,20 @@ class CatalogViewModel extends ChangeNotifier {
   List<Product> _products = [];
   int _selectedTabIndex = 0;
   String? _error;
+  bool _isOffline = false;
+  bool _tabRestored = false;
+  bool _recovering = false;
 
-  CatalogViewModel(this._repository);
+  late final StreamSubscription<List<ConnectivityResult>> _connectivitySub;
+
+  CatalogViewModel(this._repository) {
+    _connectivitySub = Connectivity().onConnectivityChanged.listen(_onConnectivityChanged);
+  }
 
   CatalogStatus get status => _status;
   String? get error => _error;
   int get selectedTabIndex => _selectedTabIndex;
+  bool get isOffline => _isOffline;
 
   List<Category> get tabs => [
         const Category(id: Category.newId, name: Category.newName),
@@ -37,26 +47,82 @@ class CatalogViewModel extends ChangeNotifier {
     return _products.where((p) => p.categoryId == tab.id).toList();
   }
 
-  Future<void> load() async {
-    _status = CatalogStatus.loading;
-    _error = null;
-    notifyListeners();
+  void _onConnectivityChanged(List<ConnectivityResult> results) {
+    final hasNetwork = results.any((r) => r != ConnectivityResult.none);
+    if (hasNetwork && _isOffline) {
+      _recover();
+    }
+  }
 
+  Future<void> _recover() async {
+    if (_recovering) return;
+    _recovering = true;
     try {
-      final data = await _repository.loadCatalog();
+      final data = await _repository.refreshFromApi();
       _categories = data.categories;
       _products = data.products;
       _status = CatalogStatus.success;
+      _error = null;
+      _isOffline = false;
+      if (!_tabRestored) {
+        await _restoreTabIndex();
+        _tabRestored = true;
+      }
+      notifyListeners();
+    } catch (_) {
+      // Still offline — keep state as is
+    } finally {
+      _recovering = false;
+    }
+  }
 
-      final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.getInt('selected_tab_index') ?? 0;
-      _selectedTabIndex = saved.clamp(0, tabs.length - 1);
-    } catch (e) {
-      _error = 'Не удалось загрузить каталог';
-      _status = CatalogStatus.error;
+  Future<void> load() async {
+    _isOffline = false;
+
+    if (_status != CatalogStatus.success) {
+      _status = CatalogStatus.loading;
+      _error = null;
+      notifyListeners();
     }
 
-    notifyListeners();
+    if (_products.isEmpty) {
+      final cached = await _repository.loadFromCache();
+      if (cached != null) {
+        _categories = cached.categories;
+        _products = cached.products;
+        _status = CatalogStatus.success;
+        if (!_tabRestored) {
+          await _restoreTabIndex();
+          _tabRestored = true;
+        }
+        notifyListeners();
+      }
+    }
+
+    try {
+      final data = await _repository.refreshFromApi();
+      _categories = data.categories;
+      _products = data.products;
+      _status = CatalogStatus.success;
+      if (!_tabRestored) {
+        await _restoreTabIndex();
+        _tabRestored = true;
+      }
+      notifyListeners();
+    } catch (_) {
+      _isOffline = true;
+      if (_products.isEmpty) {
+        _error = 'Нет соединения с сетью';
+        _status = CatalogStatus.error;
+      }
+      notifyListeners();
+    }
+  }
+
+  Future<void> _restoreTabIndex() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getInt('selected_tab_index') ?? 0;
+    _selectedTabIndex = saved.clamp(0, tabs.length - 1);
   }
 
   Future<void> selectTab(int index) async {
@@ -65,5 +131,11 @@ class CatalogViewModel extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('selected_tab_index', index);
+  }
+
+  @override
+  void dispose() {
+    _connectivitySub.cancel();
+    super.dispose();
   }
 }
