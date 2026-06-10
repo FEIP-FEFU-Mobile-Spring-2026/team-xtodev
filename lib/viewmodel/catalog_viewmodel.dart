@@ -30,6 +30,7 @@ class CatalogViewModel extends ChangeNotifier {
   String? get error => _error;
   int get selectedTabIndex => _selectedTabIndex;
   bool get isOffline => _isOffline;
+  List<Product> get products => List.unmodifiable(_products);
 
   List<Category> get tabs => [
         const Category(id: Category.newId, name: Category.newName),

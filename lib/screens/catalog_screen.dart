@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../viewmodel/catalog_viewmodel.dart';
+import '../viewmodel/theme_notifier.dart';
 import '../widgets/product_card.dart';
 import '../widgets/product_detail_sheet.dart';
 
@@ -15,6 +16,18 @@ class CatalogScreen extends StatelessWidget {
         title: const Text('FastBuy'),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
+        actions: [
+          Builder(
+            builder: (ctx) {
+              final isDark = Theme.of(ctx).brightness == Brightness.dark;
+              return IconButton(
+                icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+                onPressed: () =>
+                    ctx.read<ThemeNotifier>().toggle(Theme.of(ctx).brightness),
+              );
+            },
+          ),
+        ],
       ),
       body: Consumer<CatalogViewModel>(
         builder: (context, vm, _) => switch (vm.status) {

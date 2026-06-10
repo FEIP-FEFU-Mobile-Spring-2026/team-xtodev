@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../utils/price_formatter.dart';
+import '../viewmodel/cart_viewmodel.dart';
 
 class ProductDetailSheet extends StatefulWidget {
   final Product product;
@@ -158,7 +160,23 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
             child: SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: () {},
+                onPressed: product.sizes.isNotEmpty && _selectedSizeId == null
+                    ? null
+                    : () {
+                        final cart = context.read<CartViewModel>();
+                        final messenger = ScaffoldMessenger.of(context);
+                        Navigator.pop(context);
+                        cart.addItem(
+                          productId: product.id,
+                          sizeId: _selectedSizeId ?? '',
+                        );
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Добавлено в корзину'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
                 child: const Text('В корзину'),
               ),
             ),
